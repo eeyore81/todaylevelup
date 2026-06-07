@@ -6,5 +6,9 @@
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).refreshTimer</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+	</array>
 </dict>
 </plist>

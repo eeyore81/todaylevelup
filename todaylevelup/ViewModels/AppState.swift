@@ -26,6 +26,9 @@ final class AppState {
     // MARK: - Theme
     var isRPGTheme: Bool = true   // 기본 RPG 테마 ON
 
+    // MARK: - Timer State (나갔다 와도 유지)
+    var activeTimer: TimerState?
+
     // MARK: - Navigation
     var selectedTab: ChildTab = .home
 
@@ -363,6 +366,16 @@ final class AppState {
         isRPGTheme.toggle()
         UserDefaults.standard.set(isRPGTheme, forKey: "rpg_theme")
     }
+}
+
+// MARK: - Timer State (Persistent)
+
+struct TimerState: Codable, Equatable {
+    var remainingSeconds: Int
+    var totalSeconds: Int
+    var timerType: String  // "focus" or "play"
+    var questId: UUID?
+    var inventoryItemId: UUID?
 }
 
 // MARK: - Child Tab Enum

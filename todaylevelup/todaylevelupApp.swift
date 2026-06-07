@@ -11,6 +11,10 @@ import SwiftUI
 struct todaylevelupApp: App {
     @State private var appState = AppState()
 
+    init() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -20,12 +24,6 @@ struct todaylevelupApp: App {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
                     appState.saveData()
-                }
-                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
-                    TimerActivityManager.shared.enterBackground()
-                }
-                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-                    TimerActivityManager.shared.enterForeground()
                 }
         }
     }

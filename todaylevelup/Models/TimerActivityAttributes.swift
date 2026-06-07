@@ -4,10 +4,8 @@
 //
 
 import ActivityKit
-import UIKit
+import UserNotifications
 import Foundation
-
-// MARK: - Live Activity Attributes
 
 struct TimerActivityAttributes: ActivityAttributes {
     var timerType: String
@@ -16,102 +14,62 @@ struct TimerActivityAttributes: ActivityAttributes {
         var remainingSeconds: Int
         var totalSeconds: Int
         var isRunning: Bool
+        var endTimestamp: Date  // 종료 시점 절대시간
     }
 }
-
-// MARK: - TimerActivityManager
 
 @MainActor
 final class TimerActivityManager {
     static let shared = TimerActivityManager()
-
     private var currentActivity: Activity<TimerActivityAttributes>?
     private var targetEndDate: Date?
     private var totalSeconds: Int = 0
-    private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
-
-    private init() {}
 
     func start(timerType: String, totalSeconds: Int, questName: String) -> Bool {
-        let enabled = ActivityAuthorizationInfo().areActivitiesEnabled
-        guard enabled else { print("Live Activity disabled"); return false }
-
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return false }
         self.totalSeconds = totalSeconds
         self.targetEndDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
 
-        if let existing = currentActivity {
-            Task { await existing.end(dismissalPolicy: .immediate) }
-            currentActivity = nil
-        }
+        if let e = currentActivity { Task { await e.end(dismissalPolicy: .immediate) }; currentActivity = nil }
 
-        let attributes = TimerActivityAttributes(timerType: timerType, questName: questName)
-        let state = TimerActivityAttributes.ContentState(
-            remainingSeconds: totalSeconds, totalSeconds: totalSeconds, isRunning: true
-        )
+        let attr = TimerActivityAttributes(timerType: timerType, questName: questName)
+        let state = TimerActivityAttributes.ContentState(remainingSeconds: totalSeconds, totalSeconds: totalSeconds, isRunning: true, endTimestamp: targetEndDate!)
 
         do {
-            let activity = try Activity.request(
-                attributes: attributes,
-                content: .init(state: state, staleDate: targetEndDate)
-            )
-            currentActivity = activity
-            print("Live Activity started: \(activity.id)")
+            currentActivity = try Activity.request(attributes: attr, content: .init(state: state, staleDate: targetEndDate))
+            scheduleEndNotification()
             return true
-        } catch {
-            print("Live Activity error: \(error)")
-            return false
-        }
+        } catch { print("LA error: \(error)"); return false }
     }
 
     func update(remainingSeconds: Int, totalSeconds: Int, isRunning: Bool) {
-        let state = TimerActivityAttributes.ContentState(
-            remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: isRunning
-        )
-        let stale = isRunning ? targetEndDate : nil
-        Task { await currentActivity?.update(.init(state: state, staleDate: stale)) }
+        let s = TimerActivityAttributes.ContentState(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: isRunning, endTimestamp: targetEndDate ?? Date())
+        Task { await currentActivity?.update(.init(state: s, staleDate: isRunning ? targetEndDate : nil)) }
     }
 
     func end() {
         targetEndDate = nil
-        endBackgroundTask()
-        let final = TimerActivityAttributes.ContentState(
-            remainingSeconds: 0, totalSeconds: currentActivity?.content.state.totalSeconds ?? totalSeconds, isRunning: false
-        )
-        Task {
-            await currentActivity?.end(.init(state: final, staleDate: nil), dismissalPolicy: .immediate)
-            currentActivity = nil
-        }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["timerEnd"])
+        let f = TimerActivityAttributes.ContentState(remainingSeconds: 0, totalSeconds: currentActivity?.content.state.totalSeconds ?? totalSeconds, isRunning: false, endTimestamp: Date())
+        Task { await currentActivity?.end(.init(state: f, staleDate: nil), dismissalPolicy: .immediate); currentActivity = nil }
     }
 
-    /// 백그라운드 진입 시 호출 - 가능한 한 오래 타이머 유지
-    func enterBackground() {
-        backgroundTaskID = UIApplication.shared.beginBackgroundTask { [weak self] in
-            self?.endBackgroundTask()
-        }
-        // 30초 연장 후에도 종료 시각은 유지
-        DispatchQueue.main.asyncAfter(deadline: .now() + 25) { [weak self] in
-            self?.refreshFromEndDate()
-        }
+    func scheduleEndNotification() {
+        guard let end = targetEndDate else { return }
+        let interval = end.timeIntervalSinceNow
+        guard interval > 1 else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "⏰ 타이머 종료!"
+        content.body = "포모도로가 완료되었습니다."
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "timerEnd", content: content, trigger: trigger))
     }
 
-    func enterForeground() {
-        endBackgroundTask()
-        refreshFromEndDate()
-    }
-
-    private func refreshFromEndDate() {
-        guard let endDate = targetEndDate, currentActivity != nil else { return }
-        let remaining = max(0, Int(endDate.timeIntervalSinceNow))
-        if remaining <= 0 {
-            end()
-        } else {
-            update(remainingSeconds: remaining, totalSeconds: totalSeconds, isRunning: true)
-        }
-    }
-
-    private func endBackgroundTask() {
-        guard backgroundTaskID != .invalid else { return }
-        UIApplication.shared.endBackgroundTask(backgroundTaskID)
-        backgroundTaskID = .invalid
+    func getRemainingSeconds() -> Int {
+        guard let end = targetEndDate else { return 0 }
+        return max(0, Int(end.timeIntervalSinceNow))
     }
 }

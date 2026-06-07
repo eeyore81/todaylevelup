@@ -45,46 +45,44 @@ struct TimerView: View {
         let total = minutes * 60
         _totalSeconds = State(initialValue: total)
         _remainingSeconds = State(initialValue: total)
+        _isRunning = State(initialValue: true)
     }
 
     var body: some View {
         ZStack {
-            // 배경
-            backgroundColor
-                .ignoresSafeArea()
-
-            // 경고 테두리 (플레이 타이머 종료 1분 전)
-            if warningFlash {
-                borderFlash
-            }
-
+            backgroundColor.ignoresSafeArea()
+            if warningFlash { borderFlash }
             VStack(spacing: 32) {
-                // 상단 타이틀
                 timerHeader
-
                 Spacer()
-
-                // 중앙 타이머
                 timerCircle
-
                 Spacer()
-
-                // 하단 컨트롤
                 controlButtons
             }
             .padding(40)
-
-            // 완료 모달
-            if showCompletion {
-                completionOverlay
-            }
+            if showCompletion { completionOverlay }
         }
         .onAppear {
-            targetEndDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
-            startDisplayTimer()
-            startLiveActivity()
+            // 저장된 상태 복원
+            if let saved = appState.activeTimer,
+               saved.timerType == (isFocusMode ? "focus" : "play") {
+                remainingSeconds = saved.remainingSeconds
+                totalSeconds = saved.totalSeconds
+                isRunning = false
+                targetEndDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
+                liveActivityActive = true
+            } else {
+                targetEndDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
+                startDisplayTimer()
+                startLiveActivity()
+            }
         }
-        .onDisappear { stopAllTimers() }
+        .onDisappear {
+            if !showCompletion {
+                saveTimerState()
+            }
+            stopAllTimers()
+        }
         .onChange(of: remainingSeconds) { _, newValue in
             updateLiveActivity()
             if case .play = timerType, newValue <= 60, newValue > 0 {
@@ -158,6 +156,7 @@ struct TimerView: View {
         HStack(spacing: 40) {
             // 포기하기
             Button {
+                appState.activeTimer = nil
                 stopAllTimers()
                 dismiss()
             } label: {
@@ -289,13 +288,14 @@ struct TimerView: View {
     private func pauseTimer() {
         isRunning = false
         stopDisplayTimer()
+        saveTimerState()
         TimerActivityManager.shared.update(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: false)
     }
 
     private func resumeTimer() {
-        // 재개 시: 남은 시간 기준으로 새 종료 시각 설정
         targetEndDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
         isRunning = true
+        appState.activeTimer = nil
         startDisplayTimer()
         TimerActivityManager.shared.update(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: true)
     }
@@ -316,6 +316,7 @@ struct TimerView: View {
     }
 
     private func handleCompletion() {
+        appState.activeTimer = nil
         stopAllTimers()
         if isFocusMode {
             appState.completePomodoro(minutes: totalSeconds / 60, questId: questId)
@@ -348,6 +349,19 @@ struct TimerView: View {
             remainingSeconds: remainingSeconds,
             totalSeconds: totalSeconds,
             isRunning: isRunning
+        )
+    }
+
+    // MARK: - Timer State Persistence
+
+    private func saveTimerState() {
+        guard !showCompletion else { return }
+        appState.activeTimer = TimerState(
+            remainingSeconds: remainingSeconds,
+            totalSeconds: totalSeconds,
+            timerType: isFocusMode ? "focus" : "play",
+            questId: questId,
+            inventoryItemId: inventoryItem?.id
         )
     }
 
