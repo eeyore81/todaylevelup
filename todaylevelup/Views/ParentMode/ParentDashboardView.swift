@@ -99,6 +99,20 @@ struct ParentDashboardView: View {
                     }
                 }
 
+                // MARK: - 테마
+                Section {
+                    Toggle(isOn: Binding(
+                        get: { appState.isRPGTheme },
+                        set: { _ in appState.toggleRPGTheme() }
+                    )) {
+                        Label("RPG 던전 테마", systemImage: appState.isRPGTheme ? "shield.lefthalf.filled" : "shield.righthalf.filled")
+                    }
+                } header: {
+                    Text("🎨 테마 설정")
+                } footer: {
+                    Text("ON: 던전 게임처럼 어두운 RPG 스타일로 변경됩니다.\nOFF: 기본 깔끔한 모던 스타일입니다.")
+                }
+
                 // MARK: - 종료
                 Section {
                     Button(role: .destructive) {

@@ -19,49 +19,35 @@ struct WalletView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            // 보유 현황 헤더
-            walletHeader
-
-            // 카드 그리드
-            ScrollView {
-                if unusedItems.isEmpty && usedItems.isEmpty {
-                    emptyWalletView
-                } else {
-                    VStack(alignment: .leading, spacing: 16) {
-                        if !unusedItems.isEmpty {
-                            Text("사용 가능")
-                                .font(.headline)
-                                .padding(.horizontal)
-
-                            LazyVGrid(columns: columns, spacing: 12) {
-                                ForEach(unusedItems) { item in
-                                    walletCard(item)
-                                }
+        ZStack {
+            (rpg ? RPGTheme.bgDark : Color(.systemGroupedBackground)).ignoresSafeArea()
+            VStack(spacing: 0) {
+                walletHeader
+                ScrollView {
+                    if unusedItems.isEmpty && usedItems.isEmpty {
+                        emptyWalletView
+                    } else {
+                        VStack(alignment: .leading, spacing: 16) {
+                            if !unusedItems.isEmpty {
+                                Text(rpg ? "🎒 사용 가능" : "사용 가능").font(.headline)
+                                    .foregroundStyle(rpg ? RPGTheme.textGold : .primary).padding(.horizontal)
+                                LazyVGrid(columns: columns, spacing: 12) {
+                                    ForEach(unusedItems) { walletCard($0) }
+                                }.padding(.horizontal)
                             }
-                            .padding(.horizontal)
-                        }
-
-                        if !usedItems.isEmpty {
-                            Text("사용 완료")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal)
-
-                            LazyVGrid(columns: columns, spacing: 12) {
-                                ForEach(usedItems) { item in
-                                    usedCardView(item)
-                                }
+                            if !usedItems.isEmpty {
+                                Text("사용 완료").font(.headline)
+                                    .foregroundStyle(rpg ? RPGTheme.textSecondary : .secondary).padding(.horizontal)
+                                LazyVGrid(columns: columns, spacing: 12) {
+                                    ForEach(usedItems) { usedCardView($0) }
+                                }.padding(.horizontal)
                             }
-                            .padding(.horizontal)
-                        }
+                        }.padding(.vertical)
                     }
-                    .padding(.vertical)
                 }
             }
         }
-        .background(Color(.systemGroupedBackground))
-        .navigationTitle("내 지갑")
+        .navigationTitle(rpg ? "🎒 모험가 가방" : "내 지갑")
         .alert("아이템 사용", isPresented: $showConsumeAlert) {
             Button("취소", role: .cancel) { }
             if let item = selectedItem {
@@ -99,22 +85,20 @@ struct WalletView: View {
     private var walletHeader: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("보유 카드")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Text("\(unusedItems.count)장")
-                    .font(.title.bold())
+                Text(rpg ? "보유 아이템" : "보유 카드").font(.subheadline).foregroundStyle(rpg ? RPGTheme.textSecondary : .secondary)
+                Text("\(unusedItems.count)\(rpg ? "개" : "장")").font(.title.bold()).foregroundStyle(rpg ? RPGTheme.textPrimary : .primary)
             }
             Spacer()
             HStack(spacing: 4) {
-                Image(systemName: "star.fill")
-                    .foregroundStyle(.yellow)
-                Text("\(appState.childProfile.pointBalance) P")
-                    .font(.headline)
+                Image(systemName: rpg ? "dollarsign.circle.fill" : "star.fill").foregroundStyle(rpg ? RPGTheme.gold : .yellow)
+                Text("\(appState.childProfile.pointBalance) \(rpg ? "G" : "P")").font(.headline).foregroundStyle(rpg ? RPGTheme.gold : .primary)
             }
         }
         .padding()
-        .background(.white)
+        .background(rpg ? RPGTheme.bgCard : .white)
+        .overlay(alignment: .bottom) {
+            if rpg { Rectangle().fill(RPGTheme.goldDim).frame(height: 1) }
+        }
     }
 
     // MARK: - Wallet Card
@@ -137,44 +121,33 @@ struct WalletView: View {
         VStack(spacing: 8) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(itemColor(item.shopItem).opacity(isUsed ? 0.1 : 0.2))
+                    .fill(itemColor(item.shopItem).opacity(isUsed ? (rpg ? 0.05 : 0.1) : (rpg ? 0.25 : 0.2)))
                     .frame(width: 48, height: 48)
-
-                Image(systemName: item.shopItem.iconName)
-                    .font(.title2)
-                    .foregroundStyle(isUsed ? .secondary : itemColor(item.shopItem))
+                if rpg && !isUsed {
+                    RoundedRectangle(cornerRadius: 12).stroke(itemColor(item.shopItem).opacity(0.4), lineWidth: 1).frame(width: 48, height: 48)
+                }
+                Image(systemName: item.shopItem.iconName).font(.title2)
+                    .foregroundStyle(isUsed ? (rpg ? RPGTheme.textSecondary : .secondary) : itemColor(item.shopItem))
             }
-
-            Text(item.shopItem.name)
-                .font(.subheadline.bold())
-                .foregroundStyle(isUsed ? .secondary : .primary)
+            Text(item.shopItem.name).font(.subheadline.bold())
+                .foregroundStyle(isUsed ? (rpg ? RPGTheme.textSecondary : .secondary) : (rpg ? RPGTheme.textPrimary : .primary))
                 .lineLimit(1)
-
             HStack(spacing: 2) {
-                Image(systemName: item.shopItem.type == .timer ? "timer" : "takeoutbag.and.cup.and.straw.fill")
-                    .font(.caption2)
-                Text(item.shopItem.type == .timer ? "\(item.shopItem.timerMinutes ?? 0)분" : "소비")
-                    .font(.caption2)
-            }
-            .foregroundStyle(.secondary)
-
+                Image(systemName: item.shopItem.type == .timer ? "timer" : "takeoutbag.and.cup.and.straw.fill").font(.caption2)
+                Text(item.shopItem.type == .timer ? "\(item.shopItem.timerMinutes ?? 0)분" : "소비").font(.caption2)
+            }.foregroundStyle(rpg ? RPGTheme.textSecondary : .secondary)
             if isUsed {
-                Label("사용 완료", systemImage: "checkmark.circle.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.green)
+                Label("사용 완료", systemImage: "checkmark.circle.fill").font(.caption2)
+                    .foregroundStyle(rpg ? RPGTheme.hpGreen : .green)
             }
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.03), radius: 6)
+        .background(rpg ? RPGTheme.bgCard : .white)
+        .clipShape(RoundedRectangle(cornerRadius: rpg ? 12 : 16))
+        .shadow(color: rpg ? .black.opacity(0.3) : .black.opacity(0.03), radius: 6)
         .opacity(isUsed ? 0.6 : 1.0)
-        .overlay {
-            if cardToShred == item.id {
-                shredOverlay
-            }
-        }
+        .overlay { if cardToShred == item.id { shredOverlay } }
     }
 
     // MARK: - Parent Request Sheet
@@ -257,6 +230,8 @@ struct WalletView: View {
     }
 
     // MARK: - Helpers
+
+    private var rpg: Bool { appState.isRPGTheme }
 
     private var unusedItems: [InventoryItem] {
         appState.inventory.filter { !$0.isUsed }

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import ActivityKit
 
 enum TimerMode {
     case focus                     // 집중 포모도로
@@ -28,6 +29,7 @@ struct TimerView: View {
     // 경고 효과 (플레이 타이머 종료 1분 전)
     @State private var warningFlash = false
     @State private var warningTimer: Timer?
+    @State private var liveActivityActive = false
 
     init(timerType: TimerMode, inventoryItem: InventoryItem? = nil, questId: UUID? = nil) {
         self.timerType = timerType
@@ -76,9 +78,13 @@ struct TimerView: View {
                 completionOverlay
             }
         }
-        .onAppear { startTimer() }
+        .onAppear {
+            startTimer()
+            startLiveActivity()
+        }
         .onDisappear { stopAllTimers() }
         .onChange(of: remainingSeconds) { _, newValue in
+            updateLiveActivity()
             if case .play = timerType, newValue <= 60, newValue > 0 {
                 startWarningFlash()
             }
@@ -97,6 +103,10 @@ struct TimerView: View {
                     .font(.title)
                 Text(isFocusMode ? "집중 타임" : "플레이 타임")
                     .font(.title.bold())
+                // Live Activity 상태 표시
+                Image(systemName: liveActivityActive ? "livephoto" : "livephoto.slash")
+                    .font(.caption)
+                    .foregroundStyle(liveActivityActive ? .green : .red.opacity(0.6))
             }
             if let questName = questName {
                 Text(questName)
@@ -265,11 +275,13 @@ struct TimerView: View {
         isRunning = false
         timer?.invalidate()
         timer = nil
+        TimerActivityManager.shared.update(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: false)
     }
 
     private func resumeTimer() {
         isRunning = true
         startTimer()
+        TimerActivityManager.shared.update(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: true)
     }
 
     private func stopAllTimers() {
@@ -277,6 +289,7 @@ struct TimerView: View {
         timer = nil
         warningTimer?.invalidate()
         warningTimer = nil
+        TimerActivityManager.shared.end()
     }
 
     private func startWarningFlash() {
@@ -293,7 +306,6 @@ struct TimerView: View {
             appState.completePomodoro(minutes: totalSeconds / 60, questId: questId)
         } else {
             appState.consumePlayTime(minutes: totalSeconds / 60)
-            // 인벤토리 아이템 소비 처리
             if let item = inventoryItem {
                 appState.markInventoryItemUsed(item)
             }
@@ -301,6 +313,27 @@ struct TimerView: View {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
             showCompletion = true
         }
+    }
+
+    // MARK: - Live Activity
+
+    private func startLiveActivity() {
+        let typeStr = isFocusMode ? "focus" : "play"
+        let quest = questName ?? ""
+        liveActivityActive = TimerActivityManager.shared.start(
+            timerType: typeStr,
+            totalSeconds: totalSeconds,
+            questName: quest
+        )
+    }
+
+    private func updateLiveActivity() {
+        guard liveActivityActive else { return }
+        TimerActivityManager.shared.update(
+            remainingSeconds: remainingSeconds,
+            totalSeconds: totalSeconds,
+            isRunning: isRunning
+        )
     }
 
     // MARK: - Helpers

@@ -24,7 +24,7 @@ final class AppState {
     var pinLockUntil: Date?
 
     // MARK: - Theme
-    var isRPGTheme: Bool = false
+    var isRPGTheme: Bool = true   // 기본 RPG 테마 ON
 
     // MARK: - Navigation
     var selectedTab: ChildTab = .home

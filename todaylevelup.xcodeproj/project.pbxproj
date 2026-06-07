@@ -6,14 +6,65 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0756117B2FD4F4B700C2C9B9 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0756115A2FD4F46900C2C9B9 /* WidgetKit.framework */; };
+		0756117C2FD4F4B700C2C9B9 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0756115C2FD4F46900C2C9B9 /* SwiftUI.framework */; };
+		0756118D2FD4F4B700C2C9B9 /* todaylevelupWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0756117A2FD4F4B700C2C9B9 /* todaylevelupWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0756118B2FD4F4B700C2C9B9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0756111F2FD4E9A000C2C9B9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 075611792FD4F4B700C2C9B9;
+			remoteInfo = todaylevelupWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		075611732FD4F46A00C2C9B9 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0756118D2FD4F4B700C2C9B9 /* todaylevelupWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		075611272FD4E9A000C2C9B9 /* todaylevelup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = todaylevelup.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0756115A2FD4F46900C2C9B9 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		0756115C2FD4F46900C2C9B9 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		0756117A2FD4F4B700C2C9B9 /* todaylevelupWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = todaylevelupWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0756118E2FD4F4B700C2C9B9 /* Exceptions for "todaylevelupWidget" folder in "todaylevelupWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 075611792FD4F4B700C2C9B9 /* todaylevelupWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		075611292FD4E9A000C2C9B9 /* todaylevelup */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = todaylevelup;
+			sourceTree = "<group>";
+		};
+		0756117D2FD4F4B700C2C9B9 /* todaylevelupWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0756118E2FD4F4B700C2C9B9 /* Exceptions for "todaylevelupWidget" folder in "todaylevelupWidgetExtension" target */,
+			);
+			path = todaylevelupWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,6 +77,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		075611772FD4F4B700C2C9B9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0756117C2FD4F4B700C2C9B9 /* SwiftUI.framework in Frameworks */,
+				0756117B2FD4F4B700C2C9B9 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +93,8 @@
 			isa = PBXGroup;
 			children = (
 				075611292FD4E9A000C2C9B9 /* todaylevelup */,
+				0756117D2FD4F4B700C2C9B9 /* todaylevelupWidget */,
+				075611592FD4F46900C2C9B9 /* Frameworks */,
 				075611282FD4E9A000C2C9B9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +103,18 @@
 			isa = PBXGroup;
 			children = (
 				075611272FD4E9A000C2C9B9 /* todaylevelup.app */,
+				0756117A2FD4F4B700C2C9B9 /* todaylevelupWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		075611592FD4F46900C2C9B9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0756115A2FD4F46900C2C9B9 /* WidgetKit.framework */,
+				0756115C2FD4F46900C2C9B9 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -55,10 +127,12 @@
 				075611232FD4E9A000C2C9B9 /* Sources */,
 				075611242FD4E9A000C2C9B9 /* Frameworks */,
 				075611252FD4E9A000C2C9B9 /* Resources */,
+				075611732FD4F46A00C2C9B9 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0756118C2FD4F4B700C2C9B9 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				075611292FD4E9A000C2C9B9 /* todaylevelup */,
@@ -69,6 +143,28 @@
 			productName = todaylevelup;
 			productReference = 075611272FD4E9A000C2C9B9 /* todaylevelup.app */;
 			productType = "com.apple.product-type.application";
+		};
+		075611792FD4F4B700C2C9B9 /* todaylevelupWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0756118F2FD4F4B700C2C9B9 /* Build configuration list for PBXNativeTarget "todaylevelupWidgetExtension" */;
+			buildPhases = (
+				075611762FD4F4B700C2C9B9 /* Sources */,
+				075611772FD4F4B700C2C9B9 /* Frameworks */,
+				075611782FD4F4B700C2C9B9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0756117D2FD4F4B700C2C9B9 /* todaylevelupWidget */,
+			);
+			name = todaylevelupWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = todaylevelupWidgetExtension;
+			productReference = 0756117A2FD4F4B700C2C9B9 /* todaylevelupWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +177,9 @@
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					075611262FD4E9A000C2C9B9 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					075611792FD4F4B700C2C9B9 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
@@ -100,12 +199,20 @@
 			projectRoot = "";
 			targets = (
 				075611262FD4E9A000C2C9B9 /* todaylevelup */,
+				075611792FD4F4B700C2C9B9 /* todaylevelupWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		075611252FD4E9A000C2C9B9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		075611782FD4F4B700C2C9B9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +229,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		075611762FD4F4B700C2C9B9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0756118C2FD4F4B700C2C9B9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 075611792FD4F4B700C2C9B9 /* todaylevelupWidgetExtension */;
+			targetProxy = 0756118B2FD4F4B700C2C9B9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		075611302FD4E9A100C2C9B9 /* Debug */ = {
@@ -254,6 +376,7 @@
 				DEVELOPMENT_TEAM = M5J8ZR3U3F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -287,6 +410,7 @@
 				DEVELOPMENT_TEAM = M5J8ZR3U3F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -303,6 +427,70 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		075611902FD4F4B700C2C9B9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M5J8ZR3U3F;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = todaylevelupWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = todaylevelupWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rainyworld.todaylevelup.todaylevelupWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		075611912FD4F4B700C2C9B9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M5J8ZR3U3F;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = todaylevelupWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = todaylevelupWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rainyworld.todaylevelup.todaylevelupWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -327,6 +515,15 @@
 			buildConfigurations = (
 				075611332FD4E9A100C2C9B9 /* Debug */,
 				075611342FD4E9A100C2C9B9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0756118F2FD4F4B700C2C9B9 /* Build configuration list for PBXNativeTarget "todaylevelupWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				075611902FD4F4B700C2C9B9 /* Debug */,
+				075611912FD4F4B700C2C9B9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

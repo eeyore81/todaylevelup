@@ -13,26 +13,19 @@ struct ShopView: View {
     @State private var flyingCard = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            // 포인트 잔액 헤더
-            pointHeader
-
-            // 상품 리스트
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(activeShopItems) { item in
-                        shopItemRow(item)
-                    }
-
-                    if activeShopItems.isEmpty {
-                        emptyShopView
-                    }
+        ZStack {
+            (rpg ? RPGTheme.bgDark : Color(.systemGroupedBackground)).ignoresSafeArea()
+            VStack(spacing: 0) {
+                pointHeader
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(activeShopItems) { item in shopItemRow(item) }
+                        if activeShopItems.isEmpty { emptyShopView }
+                    }.padding()
                 }
-                .padding()
             }
         }
-        .background(Color(.systemGroupedBackground))
-        .navigationTitle("포인트 상점")
+        .navigationTitle(rpg ? "🏪 모험가 상점" : "포인트 상점")
         .alert("구매 확인", isPresented: $showPurchaseAlert) {
             Button("취소", role: .cancel) { }
             Button("구매하기") {
@@ -63,81 +56,56 @@ struct ShopView: View {
 
     private var pointHeader: some View {
         HStack {
-            Image(systemName: "star.fill")
-                .foregroundStyle(.yellow)
-            Text("보유 포인트")
-                .font(.subheadline)
+            Image(systemName: rpg ? "dollarsign.circle.fill" : "star.fill").foregroundStyle(rpg ? RPGTheme.gold : .yellow)
+            Text(rpg ? "보유 골드" : "보유 포인트").font(.subheadline).foregroundStyle(rpg ? RPGTheme.textSecondary : .secondary)
             Spacer()
-            Text("\(appState.childProfile.pointBalance) P")
-                .font(.title2.bold())
-                .foregroundStyle(.orange)
+            Text("\(appState.childProfile.pointBalance) \(rpg ? "G" : "P")").font(.title2.bold()).foregroundStyle(rpg ? RPGTheme.gold : .orange)
         }
         .padding()
-        .background(.white)
+        .background(rpg ? RPGTheme.bgCard : .white)
+        .overlay(alignment: .bottom) {
+            if rpg { Rectangle().fill(RPGTheme.goldDim).frame(height: 1) }
+        }
     }
 
     // MARK: - Shop Item Row
 
     private func shopItemRow(_ item: ShopItem) -> some View {
         HStack(spacing: 16) {
-            // 아이콘
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(itemColor(item).opacity(0.15))
-                    .frame(width: 52, height: 52)
-                Image(systemName: item.iconName)
-                    .font(.title3)
-                    .foregroundStyle(itemColor(item))
+                RoundedRectangle(cornerRadius: 12).fill(itemColor(item).opacity(rpg ? 0.25 : 0.15)).frame(width: 52, height: 52)
+                if rpg { RoundedRectangle(cornerRadius: 12).stroke(itemColor(item).opacity(0.4), lineWidth: 1).frame(width: 52, height: 52) }
+                Image(systemName: item.iconName).font(.title3).foregroundStyle(itemColor(item))
             }
-
-            // 정보
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.name)
-                    .font(.headline)
+                Text(item.name).font(.headline).foregroundStyle(rpg ? RPGTheme.textPrimary : .primary)
                 HStack(spacing: 4) {
-                    Image(systemName: item.type == .timer ? "timer" : "takeoutbag.and.cup.and.straw.fill")
-                        .font(.caption)
+                    Image(systemName: item.type == .timer ? "timer" : "takeoutbag.and.cup.and.straw.fill").font(.caption)
                     Text(item.type == .timer ? "게임시간 (\(item.timerMinutes ?? 0)분)" : "실물 보상")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(rpg ? RPGTheme.textSecondary : .secondary)
                 }
             }
-
             Spacer()
-
-            // 가격 & 구매 버튼
             VStack(spacing: 8) {
                 HStack(spacing: 2) {
-                    Image(systemName: "star.fill")
-                        .font(.caption2)
-                        .foregroundStyle(.yellow)
-                    Text("\(item.costPoints)")
-                        .font(.headline)
+                    Image(systemName: rpg ? "dollarsign.circle.fill" : "star.fill").font(.caption2).foregroundStyle(rpg ? RPGTheme.gold : .yellow)
+                    Text("\(item.costPoints)").font(.headline).foregroundStyle(rpg ? RPGTheme.textGold : .primary)
                 }
-
                 Button {
-                    selectedItem = item
-                    showPurchaseAlert = true
+                    selectedItem = item; showPurchaseAlert = true
                 } label: {
-                    Text("구매")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            canAfford(item)
-                                ? Color.blue
-                                : Color(.systemGray3)
-                        )
+                    Text("구매").font(.caption.bold()).foregroundStyle(rpg ? RPGTheme.bgDark : .white)
+                        .padding(.horizontal, 16).padding(.vertical, 8)
+                        .background(canAfford(item) ? (rpg ? RPGTheme.gold : Color.blue) : (rpg ? RPGTheme.borderDim : Color(.systemGray3)))
                         .clipShape(Capsule())
-                }
-                .disabled(!canAfford(item))
+                }.disabled(!canAfford(item))
             }
         }
         .padding()
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.03), radius: 6)
+        .background(rpg ? RPGTheme.bgCard : .white)
+        .clipShape(RoundedRectangle(cornerRadius: rpg ? 12 : 16))
+        .overlay { if rpg { RoundedRectangle(cornerRadius: 12).stroke(RPGTheme.borderDim, lineWidth: 1) } }
+        .shadow(color: rpg ? .black.opacity(0.3) : .black.opacity(0.03), radius: 6)
     }
 
     // MARK: - Empty State
@@ -188,6 +156,8 @@ struct ShopView: View {
     private var activeShopItems: [ShopItem] {
         appState.shopItems.filter { $0.isActive }
     }
+
+    private var rpg: Bool { appState.isRPGTheme }
 
     private func canAfford(_ item: ShopItem) -> Bool {
         appState.childProfile.pointBalance >= item.costPoints
