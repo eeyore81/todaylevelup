@@ -51,11 +51,21 @@
 			);
 			target = 075611792FD4F4B700C2C9B9 /* todaylevelupWidgetExtension */;
 		};
+		075613662FD5099A00C2C9B9 /* Exceptions for "todaylevelup" folder in "todaylevelup" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 075611262FD4E9A000C2C9B9 /* todaylevelup */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		075611292FD4E9A000C2C9B9 /* todaylevelup */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				075613662FD5099A00C2C9B9 /* Exceptions for "todaylevelup" folder in "todaylevelup" target */,
+			);
 			path = todaylevelup;
 			sourceTree = "<group>";
 		};
@@ -376,6 +386,7 @@
 				DEVELOPMENT_TEAM = M5J8ZR3U3F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = todaylevelup/Info.plist;
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -410,6 +421,7 @@
 				DEVELOPMENT_TEAM = M5J8ZR3U3F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = todaylevelup/Info.plist;
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

@@ -4,6 +4,7 @@
 //
 
 import ActivityKit
+import UIKit
 import Foundation
 
 // MARK: - Live Activity Attributes
@@ -25,80 +26,92 @@ final class TimerActivityManager {
     static let shared = TimerActivityManager()
 
     private var currentActivity: Activity<TimerActivityAttributes>?
+    private var targetEndDate: Date?
+    private var totalSeconds: Int = 0
+    private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
 
     private init() {}
 
-    /// Live Activity 시작
     func start(timerType: String, totalSeconds: Int, questName: String) -> Bool {
-        // 권한 체크
         let enabled = ActivityAuthorizationInfo().areActivitiesEnabled
-        print("🎯 Live Activity 권한: \(enabled)")
+        guard enabled else { print("Live Activity disabled"); return false }
 
-        guard enabled else {
-            print("🎯 Live Activity가 비활성화되어 있습니다. 설정에서 'Live Activities'를 켜주세요.")
-            return false
-        }
+        self.totalSeconds = totalSeconds
+        self.targetEndDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
 
-        // 기존 Activity가 있으면 종료
         if let existing = currentActivity {
             Task { await existing.end(dismissalPolicy: .immediate) }
             currentActivity = nil
         }
 
-        let attributes = TimerActivityAttributes(
-            timerType: timerType,
-            questName: questName
-        )
-        let initialState = TimerActivityAttributes.ContentState(
-            remainingSeconds: totalSeconds,
-            totalSeconds: totalSeconds,
-            isRunning: true
+        let attributes = TimerActivityAttributes(timerType: timerType, questName: questName)
+        let state = TimerActivityAttributes.ContentState(
+            remainingSeconds: totalSeconds, totalSeconds: totalSeconds, isRunning: true
         )
 
         do {
             let activity = try Activity.request(
                 attributes: attributes,
-                content: .init(state: initialState, staleDate: nil)
+                content: .init(state: state, staleDate: targetEndDate)
             )
             currentActivity = activity
-            print("🎯 Live Activity 시작 성공! ID: \(activity.id)")
-            print("🎯 → 잠금화면에서 확인하세요. Dynamic Island는 iPhone 14 Pro 이상 실기기에서만 보입니다.")
+            print("Live Activity started: \(activity.id)")
             return true
         } catch {
-            print("🎯 Live Activity 시작 실패: \(error.localizedDescription)")
+            print("Live Activity error: \(error)")
             return false
         }
     }
 
-    /// 타이머 상태 업데이트
     func update(remainingSeconds: Int, totalSeconds: Int, isRunning: Bool) {
         let state = TimerActivityAttributes.ContentState(
-            remainingSeconds: remainingSeconds,
-            totalSeconds: totalSeconds,
-            isRunning: isRunning
+            remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: isRunning
         )
+        let stale = isRunning ? targetEndDate : nil
+        Task { await currentActivity?.update(.init(state: state, staleDate: stale)) }
+    }
 
+    func end() {
+        targetEndDate = nil
+        endBackgroundTask()
+        let final = TimerActivityAttributes.ContentState(
+            remainingSeconds: 0, totalSeconds: currentActivity?.content.state.totalSeconds ?? totalSeconds, isRunning: false
+        )
         Task {
-            await currentActivity?.update(
-                .init(state: state, staleDate: nil)
-            )
+            await currentActivity?.end(.init(state: final, staleDate: nil), dismissalPolicy: .immediate)
+            currentActivity = nil
         }
     }
 
-    /// Live Activity 종료
-    func end() {
-        let finalState = TimerActivityAttributes.ContentState(
-            remainingSeconds: 0,
-            totalSeconds: currentActivity?.content.state.totalSeconds ?? 0,
-            isRunning: false
-        )
-
-        Task {
-            await currentActivity?.end(
-                .init(state: finalState, staleDate: nil),
-                dismissalPolicy: .immediate
-            )
-            currentActivity = nil
+    /// 백그라운드 진입 시 호출 - 가능한 한 오래 타이머 유지
+    func enterBackground() {
+        backgroundTaskID = UIApplication.shared.beginBackgroundTask { [weak self] in
+            self?.endBackgroundTask()
         }
+        // 30초 연장 후에도 종료 시각은 유지
+        DispatchQueue.main.asyncAfter(deadline: .now() + 25) { [weak self] in
+            self?.refreshFromEndDate()
+        }
+    }
+
+    func enterForeground() {
+        endBackgroundTask()
+        refreshFromEndDate()
+    }
+
+    private func refreshFromEndDate() {
+        guard let endDate = targetEndDate, currentActivity != nil else { return }
+        let remaining = max(0, Int(endDate.timeIntervalSinceNow))
+        if remaining <= 0 {
+            end()
+        } else {
+            update(remainingSeconds: remaining, totalSeconds: totalSeconds, isRunning: true)
+        }
+    }
+
+    private func endBackgroundTask() {
+        guard backgroundTaskID != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(backgroundTaskID)
+        backgroundTaskID = .invalid
     }
 }

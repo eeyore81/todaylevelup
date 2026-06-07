@@ -22,9 +22,9 @@ struct TimerView: View {
     @State private var remainingSeconds: Int
     @State private var totalSeconds: Int
     @State private var isRunning = true
+    @State private var targetEndDate: Date = Date()
     @State private var timer: Timer?
     @State private var showCompletion = false
-    @State private var showConfetti = false
 
     // 경고 효과 (플레이 타이머 종료 1분 전)
     @State private var warningFlash = false
@@ -42,8 +42,9 @@ struct TimerView: View {
         case .play(let mins):
             minutes = mins
         }
-        _remainingSeconds = State(initialValue: minutes * 60)
-        _totalSeconds = State(initialValue: minutes * 60)
+        let total = minutes * 60
+        _totalSeconds = State(initialValue: total)
+        _remainingSeconds = State(initialValue: total)
     }
 
     var body: some View {
@@ -79,7 +80,8 @@ struct TimerView: View {
             }
         }
         .onAppear {
-            startTimer()
+            targetEndDate = Date().addingTimeInterval(TimeInterval(totalSeconds))
+            startDisplayTimer()
             startLiveActivity()
         }
         .onDisappear { stopAllTimers() }
@@ -261,32 +263,45 @@ struct TimerView: View {
             .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: warningFlash)
     }
 
-    // MARK: - Timer Logic
+    // MARK: - Timer Logic (종료 시각 기반)
 
-    private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if remainingSeconds > 0 {
-                remainingSeconds -= 1
+    private func startDisplayTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            refreshFromEndDate()
+        }
+    }
+
+    private func stopDisplayTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    private func refreshFromEndDate() {
+        let now = Date()
+        if isRunning {
+            let left = max(0, Int(targetEndDate.timeIntervalSince(now)))
+            if remainingSeconds != left {
+                remainingSeconds = left
             }
         }
     }
 
     private func pauseTimer() {
         isRunning = false
-        timer?.invalidate()
-        timer = nil
+        stopDisplayTimer()
         TimerActivityManager.shared.update(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: false)
     }
 
     private func resumeTimer() {
+        // 재개 시: 남은 시간 기준으로 새 종료 시각 설정
+        targetEndDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
         isRunning = true
-        startTimer()
+        startDisplayTimer()
         TimerActivityManager.shared.update(remainingSeconds: remainingSeconds, totalSeconds: totalSeconds, isRunning: true)
     }
 
     private func stopAllTimers() {
-        timer?.invalidate()
-        timer = nil
+        stopDisplayTimer()
         warningTimer?.invalidate()
         warningTimer = nil
         TimerActivityManager.shared.end()

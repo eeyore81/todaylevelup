@@ -21,6 +21,12 @@ struct todaylevelupApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
                     appState.saveData()
                 }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+                    TimerActivityManager.shared.enterBackground()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                    TimerActivityManager.shared.enterForeground()
+                }
         }
     }
 }
